@@ -4,6 +4,16 @@ from matplotlib import widgets
 import matplotlib.pyplot
 import numpy
 
+from processing import *
+from sklearn.model_selection import KFold
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.layers import MaxPooling2D
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.optimizers import SGD
+
 def byte_decoder(directory_address):
     x, y = [], []
     bytes_listed = []
@@ -15,16 +25,13 @@ def byte_decoder(directory_address):
     current_bitmap_width = 0
     current_bitmap_size_tracker = 0
     current_bitmap = []
-    width_array = []
-    height_array = []
 
     for path in os.listdir(directory_address):
         full_path = os.path.join(directory_address, path)
         if os.path.isfile(full_path):
             if not full_path.endswith(".DS_Store"):
-                address = full_path
-                print(address)
-                data = open(address, 'rb')
+                print(full_path)
+                data = open(full_path, 'rb')
 
                 while (byte := data.read(1)):
                     bytes_listed.append(byte)
@@ -36,9 +43,7 @@ def byte_decoder(directory_address):
                     y.append(byte_to_num((bytes_listed[offset] + bytes_listed[offset + 1])))
                     offset += 2
                     current_bitmap_height = byte_to_num((bytes_listed[offset] + bytes_listed[offset + 1]))
-                    height_array.append(current_bitmap_height)
                     current_bitmap_width = byte_to_num((bytes_listed[offset + 2] + bytes_listed[offset + 3]))
-                    width_array.append(current_bitmap_width)
                     current_bitmap_size = current_bitmap_width * current_bitmap_height
                     offset += 4
                     while current_bitmap_size_tracker < current_bitmap_size:
@@ -49,8 +54,9 @@ def byte_decoder(directory_address):
                     current_bitmap_size = 0
                     current_bitmap = []
                     current_bitmap_size_tracker = 0
+                print(f"{len(x)} {len(y)}")
 
-    return x, y, width_array, height_array
+    return x, y
 
 def byte_to_num(byte):
     return int.from_bytes(byte, byteorder='little', signed=False)
@@ -60,26 +66,24 @@ def dimensionality_buffer(byte_list, width, height):
     shape = numpy.shape(byte_array)
     padded_array = numpy.full((500,500), 255)
     padded_array[:shape[0],:shape[1]] = byte_array
-    padded_array[0:100, 0:100]
-    return padded_array
+    return padded_array[0:100, 0:100]
 
 def collect_data():
-    trainX, trainY, widths, heights = byte_decoder("/Users/evelyndarling/python/DATASETS/HANDWRITTEN/Gnt1.0TrainPart1")
-    testX, testY, _, _ = byte_decoder("/Users/evelyndarling/python/DATASETS/HANDWRITTEN/Gnt1.0Test")
-
-    #for i in range(171):
-     #   del trainX[0]
-      #  del trainY[0]
-       # del testX[0]
-        #del testY[0]
+    trainX, trainY = byte_decoder("/Users/evelyndarling/python/DATASETS/HANDWRITTEN/Gnt1.0TrainPart1")
+    testX, testY = byte_decoder("/Users/evelyndarling/python/DATASETS/HANDWRITTEN/Gnt1.0Test")
 
     return trainX, trainY, testX, testY
 
 #collect_data()
 
+ #for i in range(171):
+     #   del trainX[0]
+      #  del trainY[0]
+       # del testX[0]
+        #del testY[0]
+    
 #byte_test = b'\xb6\xf3'
 #print(byte_test.decode('gb18030'))
-
 
 #pain = b'\xb0\xa1'
 #print(pain.decode('gbk'))
@@ -126,3 +130,10 @@ def collect_data():
     #print(trainY[0])
     #matplotlib.pyplot.imshow(trainX[0])
     #matplotlib.pyplot.show()
+
+#    print(trainX.count)
+ #   print(trainY.count)
+  #  test_array = numpy.array(trainX)
+   # test_array2 = numpy.array(trainY)
+   # print(test_array.shape)
+   # print(test_array2.shape)
