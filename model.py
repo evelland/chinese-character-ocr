@@ -24,11 +24,6 @@ def define_model():
 	return model
 
 def evaluate_model(dataX, dataY, n_folds=5):
-#def evaluate_model(trainX, trainY, testX, testY):
-	#model = define_model()
-	#model.fit(trainX, trainY, epochs=10, batch_size=32, validation_data=(testX, testY), verbose=2)
-	#_, acc = model.evaluate(testX, testY, verbose=1)
-	#print('> %.3f' % (acc * 100.0))
 	kfold = KFold(n_folds, shuffle=True, random_state=1)
 	for train_ix, test_ix in kfold.split(dataX):
 		model = define_model()
@@ -53,3 +48,9 @@ def run_test_harness():
 	evaluate_model(trainX, trainY)
 
 run_test_harness()
+
+#def evaluate_model(trainX, trainY, testX, testY):
+	#model = define_model()
+	#model.fit(trainX, trainY, epochs=10, batch_size=32, validation_data=(testX, testY), verbose=2)
+	#_, acc = model.evaluate(testX, testY, verbose=1)
+	#print('> %.3f' % (acc * 100.0))

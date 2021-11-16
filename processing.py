@@ -4,16 +4,6 @@ from matplotlib import widgets
 import matplotlib.pyplot
 import numpy
 
-from processing import *
-from sklearn.model_selection import KFold
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.layers import MaxPooling2D
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Flatten
-from tensorflow.keras.optimizers import SGD
-
 def byte_decoder(directory_address):
     x, y = [], []
     bytes_listed = []
