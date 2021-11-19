@@ -1,52 +1,57 @@
-import os
-import matplotlib
-from matplotlib import widgets
-import matplotlib.pyplot
 import numpy
+import glob
 
-def byte_decoder(directory_address):
+def byte_decoder(directory):
     x, y = [], []
-    bytes_listed = []
-    offset = 0
-    test_sample_sizes = []
-    current_sample_size = 0
-    current_bitmap_size = 0
-    current_bitmap_height = 0
-    current_bitmap_width = 0
-    current_bitmap_size_tracker = 0
-    current_bitmap = []
+    
+    for filename in glob.iglob(f'{directory}/*'):
+        
+        cx, cy = [], []
+        characters = []
+        with open(filename, 'rb') as data:
+            print(filename) 
 
-    for path in os.listdir(directory_address):
-        full_path = os.path.join(directory_address, path)
-        if os.path.isfile(full_path):
-            if not full_path.endswith(".DS_Store"):
-                print(full_path)
-                data = open(full_path, 'rb')
+            bytes_listed = []
+            offset = 0
+            while (byte := data.read(1)):
+                bytes_listed.append(byte)
 
-                while (byte := data.read(1)):
-                    bytes_listed.append(byte)
+            while offset < len(bytes_listed): 
+                #current_sample_size = bytes_listed[offset] + bytes_listed[offset + 1] + bytes_listed[offset + 2] + bytes_listed[offset + 3]
+                offset += 4
 
-                while offset < len(bytes_listed): 
-                    current_sample_size = bytes_listed[offset] + bytes_listed[offset + 1] + bytes_listed[offset + 2] + bytes_listed[offset + 3]
-                    test_sample_sizes.append(current_sample_size)
-                    offset += 4
-                    y.append(byte_to_num((bytes_listed[offset] + bytes_listed[offset + 1])))
-                    offset += 2
-                    current_bitmap_height = byte_to_num((bytes_listed[offset] + bytes_listed[offset + 1]))
-                    current_bitmap_width = byte_to_num((bytes_listed[offset + 2] + bytes_listed[offset + 3]))
-                    current_bitmap_size = current_bitmap_width * current_bitmap_height
-                    offset += 4
-                    while current_bitmap_size_tracker < current_bitmap_size:
-                        current_bitmap.append(byte_to_num(bytes_listed[offset + current_bitmap_size_tracker]))
-                        current_bitmap_size_tracker += 1
-                    x.append(dimensionality_buffer(current_bitmap, current_bitmap_width, current_bitmap_height))
-                    offset += current_bitmap_size
-                    current_bitmap_size = 0
-                    current_bitmap = []
-                    current_bitmap_size_tracker = 0
-                print(f"{len(x)} {len(y)}")
+                current_character = 0
+                current_character, characters = character_sort(byte_to_num((bytes_listed[offset] + bytes_listed[offset + 1])), characters) 
+                y.append(current_character)
+                offset += 2
 
-    return x, y
+                current_bitmap_size = 0
+                current_bitmap_height = 0
+                current_bitmap_width = 0 
+                current_bitmap_height = byte_to_num((bytes_listed[offset] + bytes_listed[offset + 1]))
+                current_bitmap_width = byte_to_num((bytes_listed[offset + 2] + bytes_listed[offset + 3]))
+                current_bitmap_size = current_bitmap_width * current_bitmap_height
+                offset += 4
+
+                current_bitmap = []
+                current_bitmap_size_tracker = 0
+                while current_bitmap_size_tracker < current_bitmap_size:
+                    current_bitmap.append(byte_to_num(bytes_listed[offset + current_bitmap_size_tracker]))
+                    current_bitmap_size_tracker += 1
+                x.append(dimensionality_buffer(current_bitmap, current_bitmap_width, current_bitmap_height))
+                offset += current_bitmap_size
+                current_bitmap_size = 0
+        for item in cx:
+            x.append(item)
+        for item in cy:
+            y.append(item)
+
+def character_sort(character, y):
+    for i in range(0, len(y)):
+        if character == y[i]:
+            return i, y
+    y.append(character)
+    return len(y) - 1, y
 
 def byte_to_num(byte):
     return int.from_bytes(byte, byteorder='little', signed=False)
@@ -59,12 +64,12 @@ def dimensionality_buffer(byte_list, width, height):
     return padded_array[0:100, 0:100]
 
 def collect_data():
-    trainX, trainY = byte_decoder("/Users/evelyndarling/python/DATASETS/HANDWRITTEN/Gnt1.0TrainPart1")
-    testX, testY = byte_decoder("/Users/evelyndarling/python/DATASETS/HANDWRITTEN/Gnt1.0Test")
+    trainX, trainY = byte_decoder( f'C:/Users/edarling23/Downloads/casia/Gnt1.0Train')
+    testX, testY = byte_decoder(f'C:/Users/edarling23/Downloads/casia/Gnt1.0Test')
 
     return trainX, trainY, testX, testY
 
-#collect_data()
+collect_data()
 
  #for i in range(171):
      #   del trainX[0]
@@ -122,6 +127,7 @@ def collect_data():
     #matplotlib.pyplot.show()
 
 #    print(trainX.count)
+
  #   print(trainY.count)
   #  test_array = numpy.array(trainX)
    # test_array2 = numpy.array(trainY)
